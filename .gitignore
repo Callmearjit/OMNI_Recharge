@@ -1,0 +1,22 @@
+<<<<<<< HEAD
+/.metadata/
+=======
+# Eclipse
+.metadata/
+
+# Java
+target/
+*.class
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+>>>>>>> 9c64f06aba356db6b4d1e3f5a3c088513da6c6f3
