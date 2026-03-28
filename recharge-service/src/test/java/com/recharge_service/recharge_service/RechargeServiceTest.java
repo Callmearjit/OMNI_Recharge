@@ -73,7 +73,7 @@ class RechargeServiceTest {
         Recharge result = rechargeService.createRecharge(recharge);
 
         assertNotNull(result);
-        verify(rabbitProducer, times(1)).sendRechargeEvent(any());
+        verify(rabbitProducer, times(1)).sendRechargeEvent(any(), null, null, null, null);
     }
 
     //Duplicate recharge test
@@ -119,7 +119,7 @@ class RechargeServiceTest {
         Recharge result = rechargeService.createRecharge(recharge);
 
         assertNotNull(result);
-        verify(rabbitProducer, never()).sendRechargeEvent(any()); // no notification
+        verify(rabbitProducer, never()).sendRechargeEvent(any(), null, null, null, null); // no notification
     }
 
     //Circuit breaker fallback test

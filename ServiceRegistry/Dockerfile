@@ -2,14 +2,15 @@
 FROM eclipse-temurin:17-jdk-alpine AS build
 WORKDIR /app
 
-# Copy maven wrapper and pom first (layer cache for dependencies)
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
-RUN sed -i 's/\r$//' mvnw && chmod +x mvnw && ./mvnw dependency:go-offline -q
 
-# Copy source and build
+# Install Maven directly
+RUN apk add --no-cache maven
+
+COPY pom.xml ./
+RUN mvn dependency:go-offline -q   
 COPY src ./src
-RUN ./mvnw package -DskipTests -q
+RUN mvn package -DskipTests -q  
+
 
 # ─── Stage 2: Run ─────────────────────────────────────────────
 FROM eclipse-temurin:17-jre-alpine

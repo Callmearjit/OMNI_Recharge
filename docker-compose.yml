@@ -1,7 +1,7 @@
-
 networks:
   microservices-net:
     driver: bridge
+
 
 volumes:
   postgres_data:
@@ -9,7 +9,7 @@ volumes:
 
 services:
 
-  # ── ServiceRegistry (starts FIRST) ────────────────────────────
+  # ── ServiceRegistry (starts FIRST) ──────────────────────────────────
   service-registry:
     build:
       context: ./ServiceRegistry
@@ -29,7 +29,7 @@ services:
       retries: 5
       start_period: 30s
 
-  # ── ConfigServer ───────────────────────────────────────────────
+  # ── ConfigServer ─────────────────────────────────────────────────────
   config-server:
     build:
       context: ./ConfigServer
@@ -56,7 +56,7 @@ services:
       retries: 5
       start_period: 40s
 
-  # ── PostgreSQL ─────────────────────────────────────────────────
+  # ── PostgreSQL ────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: postgres
@@ -76,7 +76,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # ── RabbitMQ ───────────────────────────────────────────────────
+  # ── RabbitMQ ──────────────────────────────────────────────────────────
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: rabbitmq
@@ -98,7 +98,7 @@ services:
       retries: 5
       start_period: 30s
 
-  # ── auth-service ───────────────────────────────────────────────
+  # ── auth-service ──────────────────────────────────────────────────────
   auth-service:
     build:
       context: ./auth-service
@@ -112,6 +112,7 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - JWT_SECRET=secretarjituttt123455667ksfbbfXY
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - SERVER_PORT=8080
     depends_on:
       service-registry:
@@ -124,9 +125,9 @@ services:
       interval: 20s
       timeout: 5s
       retries: 5
-      start_period: 50s
+      start_period: 60s
 
-  # ── user-service ───────────────────────────────────────────────
+  # ── user-service ──────────────────────────────────────────────────────
   user-service:
     build:
       context: ./user-service
@@ -143,6 +144,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/OMNI_Recharge
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - SERVER_PORT=8080
     depends_on:
       service-registry:
@@ -157,9 +159,9 @@ services:
       interval: 20s
       timeout: 5s
       retries: 5
-      start_period: 50s
+      start_period: 60s
 
-  # ── operator-service ──────────────────────────────────────────
+  # ── operator-service ─────────────────────────────────────────────────
   operator-service:
     build:
       context: ./operator-service
@@ -175,6 +177,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/OMNI_Recharge
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - SERVER_PORT=8080
     depends_on:
       service-registry:
@@ -189,9 +192,9 @@ services:
       interval: 20s
       timeout: 5s
       retries: 5
-      start_period: 50s
+      start_period: 60s
 
-  # ── payment-service ───────────────────────────────────────────
+  # ── payment-service ───────────────────────────────────────────────────
   payment-service:
     build:
       context: ./payment-service
@@ -211,6 +214,8 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - SERVER_PORT=8080
     depends_on:
       service-registry:
         condition: service_healthy
@@ -228,7 +233,7 @@ services:
       retries: 5
       start_period: 60s
 
-  # ── recharge-service ──────────────────────────────────────────
+  # ── recharge-service ──────────────────────────────────────────────────
   recharge-service:
     build:
       context: ./recharge-service
@@ -248,6 +253,8 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - SERVER_PORT=8080
     depends_on:
       service-registry:
         condition: service_healthy
@@ -265,7 +272,7 @@ services:
       retries: 5
       start_period: 60s
 
-  # ── notification-service ───────────────────────────────────────
+  # ── notification-service ──────────────────────────────────────────────
   notification-service:
     build:
       context: ./notification-service
@@ -282,6 +289,7 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - SERVER_PORT=8080
     depends_on:
       service-registry:
@@ -296,23 +304,23 @@ services:
       interval: 20s
       timeout: 5s
       retries: 5
-      start_period: 50s
+      start_period: 60s
 
-  # ── Api-Gateway (starts LAST) ──────────────────────────────────
+  # ── Api-Gateway (starts LAST) ─────────────────────────────────────────
   api-gateway:
     build:
       context: ./Api-Gateway
       dockerfile: Dockerfile
     container_name: api-gateway
     ports:
-      - "8089:8080"
+      - "8089:8089"
     networks:
       - microservices-net
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - JWT_SECRET=secretarjituttt123455667ksfbbfXY
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
-      - SERVER_PORT=8080
+      - SERVER_PORT=8089
     depends_on:
       service-registry:
         condition: service_healthy
@@ -320,8 +328,8 @@ services:
         condition: service_healthy
     restart: on-failure
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8089/actuator/health"]
       interval: 20s
       timeout: 5s
       retries: 5
-      start_period: 50s
+      start_period: 60s
