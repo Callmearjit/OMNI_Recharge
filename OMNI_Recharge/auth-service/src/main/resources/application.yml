@@ -1,0 +1,75 @@
+#spring:
+#  application:
+#    name: auth-service
+#  config:
+#    import: "optional:configserver:http://localhost:8888"
+#
+#---
+#spring:
+#  config:
+#    activate:
+#      on-profile: docker
+#    import: "optional:configserver:http://config-server:8888"
+
+
+
+server:
+  port: 8082  # ← ADDED: Unique port for auth service
+
+spring:
+  application:
+    name: auth-service
+  
+  # ─────────────────────────────────────────────────────────────────────
+  # Spring Cloud Config - Load from central config server
+  # ─────────────────────────────────────────────────────────────────────
+  config:
+    import: "optional:configserver:http://localhost:8888"
+
+# ─────────────────────────────────────────────────────────────────────────
+# Fallback SpringDoc Configuration
+# These settings are used if Config Server is unavailable
+# They ensure Swagger works even without the central config
+# ─────────────────────────────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    
+    # Allow both API Gateway and direct access
+    servers:
+      - url: http://localhost:8089
+        description: API Gateway (Recommended)
+      - url: http://localhost:8082
+        description: Direct Access
+    
+    operations-sorter: method
+    tags-sorter: alpha
+  
+  # Include all paths for documentation
+  paths-to-match:
+    - /**
+  
+  # Exclude actuator endpoints
+  paths-to-exclude:
+    - /actuator/**
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+    import: "optional:configserver:http://config-server:8888"
+
+# Docker profile uses internal service names
+springdoc:
+  swagger-ui:
+    servers:
+      - url: http://api-gateway:8089
+        description: API Gateway
+      - url: http://auth-service:8082
+        description: Direct Access

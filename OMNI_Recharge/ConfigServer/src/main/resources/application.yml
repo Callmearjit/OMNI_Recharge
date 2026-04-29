@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: ConfigServer
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/Callmearjit/config-repo.git
+          clone-on-start: true
+          default-label: main
+          timeout: 10
+          force-pull: true
+          skip-ssl-validation: false
+          refresh-rate: 30
+  devtools:
+    restart:
+      enabled: false
+
+server:
+  port: 8888
+
+# ── Default (local dev) Eureka config ────────────────────────────────
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/      # ✅ FIXED: was missing
+  instance:
+    prefer-ip-address: true
+
+logging:
+  file:
+    name: logs/ConfigServer.log
+  level:
+    root: INFO
+    com.omni: DEBUG
+
+---
+# ── Docker profile ────────────────────────────────────────────────────
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://service-registry:8761/eureka/
+  instance:
+    hostname: config-server                           # ✅ FIXED: container name
+    prefer-ip-address: true

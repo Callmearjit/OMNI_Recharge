@@ -1,0 +1,178 @@
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: "optional:configserver:http://localhost:8888"
+
+  # ── Gateway Routes (local dev) ──────────────────────────────────────
+  cloud:
+    gateway:
+      routes:
+
+        # Auth Service
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1          # /auth/login → /login on auth-service
+
+        # User Service
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/users/**
+          filters:
+            - StripPrefix=1
+
+        # Operator Service
+        - id: operator-service
+          uri: lb://operator-service
+          predicates:
+            - Path=/operators/**
+          filters:
+            - StripPrefix=1
+
+        # Payment Service
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/payments/**
+          filters:
+            - StripPrefix=1
+
+        # Recharge Service
+        - id: recharge-service
+          uri: lb://recharge-service
+          predicates:
+            - Path=/recharges/**
+          filters:
+            - StripPrefix=1
+
+        # Notification Service
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/notifications/**
+          filters:
+            - StripPrefix=1
+
+server:
+  port: 8089
+
+# ── Eureka (local dev) ─────────────────────────────────────────────
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# ── SpringDoc Aggregated Swagger ───────────────────────────────────
+# How it works:
+#   Swagger UI calls  /auth/v3/api-docs
+#   Gateway route strips /auth  →  forwards /v3/api-docs to lb://auth-service
+#   auth-service responds with its OpenAPI spec ✅
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - name: Auth Service
+        url: /auth/v3/api-docs
+      - name: User Service
+        url: /users/v3/api-docs
+      - name: Operator Service
+        url: /operators/v3/api-docs
+      - name: Payment Service
+        url: /payments/v3/api-docs
+      - name: Recharge Service
+        url: /recharges/v3/api-docs
+      - name: Notification Service
+        url: /notifications/v3/api-docs
+
+# ── Actuator ───────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.Api_Gateway: DEBUG
+
+---
+# ══════════════════════════════════════════════════════════════════
+# Docker Profile
+# ══════════════════════════════════════════════════════════════════
+spring:
+  config:
+    activate:
+      on-profile: docker
+    import: "optional:configserver:http://config-server:8888"
+
+  cloud:
+    gateway:
+      routes:
+
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/users/**
+          filters:
+            - StripPrefix=1
+
+        - id: operator-service
+          uri: lb://operator-service
+          predicates:
+            - Path=/operators/**
+          filters:
+            - StripPrefix=1
+
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/payments/**
+          filters:
+            - StripPrefix=1
+
+        - id: recharge-service
+          uri: lb://recharge-service
+          predicates:
+            - Path=/recharges/**
+          filters:
+            - StripPrefix=1
+
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/notifications/**
+          filters:
+            - StripPrefix=1
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://service-registry:8761/eureka/
+  instance:
+    hostname: api-gateway
+    prefer-ip-address: true

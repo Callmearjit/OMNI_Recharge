@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><testrun name="Api-Gateway" project="Api-Gateway" tests="6" started="6" failures="0" errors="4" ignored="0">
+  <testsuite name="com.Api_Gateway.JwtUtilTest" time="0.148" displayname="JwtUtilTest" uniqueid="[engine:junit-jupiter]/[class:com.Api_Gateway.JwtUtilTest]">
+    <testcase name="testExtractClaims_Role" classname="com.Api_Gateway.JwtUtilTest" time="0.114" displayname="testExtractClaims_Role()" uniqueid="[engine:junit-jupiter]/[class:com.Api_Gateway.JwtUtilTest]/[method:testExtractClaims_Role()]">
+      <error>io.jsonwebtoken.security.WeakKeyException: The signing key's size is 176 bits which is not secure enough for the HS256 algorithm.  The JWT JWA Specification (RFC 7518, Section 3.2) states that keys used with HS256 MUST have a size &gt;= 256 bits (the key size must be greater than or equal to the hash output size).  Consider using the io.jsonwebtoken.security.Keys class's 'secretKeyFor(SignatureAlgorithm.HS256)' method to create a key guaranteed to be secure enough for HS256.  See https://tools.ietf.org/html/rfc7518#section-3.2 for more information.&#13;
+	at io.jsonwebtoken.SignatureAlgorithm.assertValid(SignatureAlgorithm.java:387)&#13;
+	at io.jsonwebtoken.SignatureAlgorithm.assertValidSigningKey(SignatureAlgorithm.java:315)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:112)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:125)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:133)&#13;
+	at com.Api_Gateway.JwtUtilTest.generateTestToken(JwtUtilTest.java:29)&#13;
+	at com.Api_Gateway.JwtUtilTest.testExtractClaims_Role(JwtUtilTest.java:57)&#13;
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)&#13;
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)&#13;
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)&#13;
+&#13;
+</error>
+    </testcase>
+    <testcase name="testExtractClaims_Username" classname="com.Api_Gateway.JwtUtilTest" time="0.003" displayname="testExtractClaims_Username()" uniqueid="[engine:junit-jupiter]/[class:com.Api_Gateway.JwtUtilTest]/[method:testExtractClaims_Username()]">
+      <error>io.jsonwebtoken.security.WeakKeyException: The signing key's size is 176 bits which is not secure enough for the HS256 algorithm.  The JWT JWA Specification (RFC 7518, Section 3.2) states that keys used with HS256 MUST have a size &gt;= 256 bits (the key size must be greater than or equal to the hash output size).  Consider using the io.jsonwebtoken.security.Keys class's 'secretKeyFor(SignatureAlgorithm.HS256)' method to create a key guaranteed to be secure enough for HS256.  See https://tools.ietf.org/html/rfc7518#section-3.2 for more information.&#13;
+	at io.jsonwebtoken.SignatureAlgorithm.assertValid(SignatureAlgorithm.java:387)&#13;
+	at io.jsonwebtoken.SignatureAlgorithm.assertValidSigningKey(SignatureAlgorithm.java:315)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:112)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:125)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:133)&#13;
+	at com.Api_Gateway.JwtUtilTest.generateTestToken(JwtUtilTest.java:29)&#13;
+	at com.Api_Gateway.JwtUtilTest.testExtractClaims_Username(JwtUtilTest.java:49)&#13;
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)&#13;
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)&#13;
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)&#13;
+&#13;
+</error>
+    </testcase>
+    <testcase name="testValidateToken_Invalid" classname="com.Api_Gateway.JwtUtilTest" time="0.017" displayname="testValidateToken_Invalid()" uniqueid="[engine:junit-jupiter]/[class:com.Api_Gateway.JwtUtilTest]/[method:testValidateToken_Invalid()]"/>
+    <testcase name="testValidateToken_Tampered" classname="com.Api_Gateway.JwtUtilTest" time="0.007" displayname="testValidateToken_Tampered()" uniqueid="[engine:junit-jupiter]/[class:com.Api_Gateway.JwtUtilTest]/[method:testValidateToken_Tampered()]">
+      <error>io.jsonwebtoken.security.WeakKeyException: The signing key's size is 176 bits which is not secure enough for the HS256 algorithm.  The JWT JWA Specification (RFC 7518, Section 3.2) states that keys used with HS256 MUST have a size &gt;= 256 bits (the key size must be greater than or equal to the hash output size).  Consider using the io.jsonwebtoken.security.Keys class's 'secretKeyFor(SignatureAlgorithm.HS256)' method to create a key guaranteed to be secure enough for HS256.  See https://tools.ietf.org/html/rfc7518#section-3.2 for more information.&#13;
+	at io.jsonwebtoken.SignatureAlgorithm.assertValid(SignatureAlgorithm.java:387)&#13;
+	at io.jsonwebtoken.SignatureAlgorithm.assertValidSigningKey(SignatureAlgorithm.java:315)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:112)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:125)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:133)&#13;
+	at com.Api_Gateway.JwtUtilTest.generateTestToken(JwtUtilTest.java:29)&#13;
+	at com.Api_Gateway.JwtUtilTest.testValidateToken_Tampered(JwtUtilTest.java:65)&#13;
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)&#13;
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)&#13;
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)&#13;
+&#13;
+</error>
+    </testcase>
+    <testcase name="testValidateToken_Valid" classname="com.Api_Gateway.JwtUtilTest" time="0.002" displayname="testValidateToken_Valid()" uniqueid="[engine:junit-jupiter]/[class:com.Api_Gateway.JwtUtilTest]/[method:testValidateToken_Valid()]">
+      <error>io.jsonwebtoken.security.WeakKeyException: The signing key's size is 176 bits which is not secure enough for the HS256 algorithm.  The JWT JWA Specification (RFC 7518, Section 3.2) states that keys used with HS256 MUST have a size &gt;= 256 bits (the key size must be greater than or equal to the hash output size).  Consider using the io.jsonwebtoken.security.Keys class's 'secretKeyFor(SignatureAlgorithm.HS256)' method to create a key guaranteed to be secure enough for HS256.  See https://tools.ietf.org/html/rfc7518#section-3.2 for more information.&#13;
+	at io.jsonwebtoken.SignatureAlgorithm.assertValid(SignatureAlgorithm.java:387)&#13;
+	at io.jsonwebtoken.SignatureAlgorithm.assertValidSigningKey(SignatureAlgorithm.java:315)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:112)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:125)&#13;
+	at io.jsonwebtoken.impl.DefaultJwtBuilder.signWith(DefaultJwtBuilder.java:133)&#13;
+	at com.Api_Gateway.JwtUtilTest.generateTestToken(JwtUtilTest.java:29)&#13;
+	at com.Api_Gateway.JwtUtilTest.testValidateToken_Valid(JwtUtilTest.java:36)&#13;
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)&#13;
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)&#13;
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)&#13;
+&#13;
+</error>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.Api_Gateway.ApiGatewayApplicationTests" time="2.175" displayname="ApiGatewayApplicationTests" uniqueid="[engine:junit-jupiter]/[class:com.Api_Gateway.ApiGatewayApplicationTests]">
+    <testcase name="contextLoads" classname="com.Api_Gateway.ApiGatewayApplicationTests" time="2.175" displayname="contextLoads()" uniqueid="[engine:junit-jupiter]/[class:com.Api_Gateway.ApiGatewayApplicationTests]/[method:contextLoads()]"/>
+  </testsuite>
+</testrun>

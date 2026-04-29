@@ -1,0 +1,65 @@
+<!-- Register Page Template -->
+<div class="auth-page">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-ring"><span>⚡</span></div>
+      <h1>OMNI <span>Recharge</span></h1>
+      <p>Create your account</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+      <div class="field-group" [class.has-error]="f['username'].invalid && f['username'].touched">
+        <label for="reg-username">Username</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input id="reg-username" type="text" formControlName="username" placeholder="Choose a username"/>
+        </div>
+        <p class="error-msg" *ngIf="f['username'].errors?.['required'] && f['username'].touched">Username is required.</p>
+        <p class="error-msg" *ngIf="f['username'].errors?.['minlength'] && f['username'].touched">Min 3 characters.</p>
+      </div>
+
+      <div class="field-group" [class.has-error]="f['email'].invalid && f['email'].touched">
+        <label for="reg-email">Email</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input id="reg-email" type="email" formControlName="email" placeholder="your@email.com"/>
+        </div>
+        <p class="error-msg" *ngIf="f['email'].errors?.['required'] && f['email'].touched">Email is required.</p>
+        <p class="error-msg" *ngIf="f['email'].errors?.['email'] && f['email'].touched">Enter a valid email.</p>
+      </div>
+
+      <div class="field-group" [class.has-error]="f['password'].invalid && f['password'].touched">
+        <label for="reg-password">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input id="reg-password" [type]="showPass ? 'text' : 'password'" formControlName="password" placeholder="Min 6 characters"/>
+          <button type="button" class="pass-toggle" (click)="showPass = !showPass">{{ showPass ? '🙈' : '👁️' }}</button>
+        </div>
+        <p class="error-msg" *ngIf="f['password'].errors?.['required'] && f['password'].touched">Password is required.</p>
+        <p class="error-msg" *ngIf="f['password'].errors?.['minlength'] && f['password'].touched">Min 6 characters required.</p>
+      </div>
+
+      <div class="field-group">
+        <label for="reg-role">Role</label>
+        <div class="input-wrap">
+          <span class="input-icon">🎭</span>
+          <select id="reg-role" formControlName="role" class="select-input">
+            <option value="USER">User</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="register-submit-btn" type="submit" class="btn-primary" [disabled]="loading">
+        <span *ngIf="!loading">Create Account →</span>
+        <span *ngIf="loading" class="btn-loading"><span class="dot-spinner"></span> Creating…</span>
+      </button>
+    </form>
+
+    <p class="auth-switch">Already have an account? <a routerLink="/login">Sign in →</a></p>
+  </div>
+</div>

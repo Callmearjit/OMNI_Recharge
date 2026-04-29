@@ -1,0 +1,26 @@
+
+package com.auth_service.auth_service.dto;
+
+public class UserResponse {
+	
+	 private String username;
+	 private String role;
+	 public String getUsername() {
+		 return username;
+	 }
+	 public void setUsername(String username) {
+		 this.username = username;
+	 }
+	 public String getRole() {
+		 return role;
+	 }
+	 public void setRole(String role) {
+		 this.role = role;
+	 }
+	 
+	 
+	 
+	    
+	    
+
+}

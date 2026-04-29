@@ -1,0 +1,8 @@
+// ─── User Models ─────────────────────────────────────────────────────────────
+
+export interface UserResponse {
+  id?: number;
+  username: string;
+  email?: string;
+  role: string;
+}

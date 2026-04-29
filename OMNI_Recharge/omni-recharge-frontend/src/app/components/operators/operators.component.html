@@ -1,0 +1,63 @@
+<app-navbar></app-navbar>
+<app-spinner [show]="loading" [message]="'Loading operators…'"></app-spinner>
+
+<div class="page" *ngIf="!loading">
+  <div class="page-header">
+    <h1>📡 Operators</h1>
+    <p>Browse all available operators and their recharge plans.</p>
+  </div>
+
+  <div class="operators-grid">
+    <div
+      class="op-card"
+      *ngFor="let op of operators"
+      [id]="'operator-card-' + op.id"
+    >
+      <!-- Operator Header -->
+      <div class="op-header" (click)="toggleOperator(op)" [style.background]="operatorColor(op.name)">
+        <div class="op-icon-wrap">
+          <span class="op-icon">{{ operatorIcon(op.name) }}</span>
+        </div>
+        <div class="op-meta">
+          <h2>{{ op.name }}</h2>
+          <span class="op-plans-count" *ngIf="planMap[op.id]">
+            {{ planMap[op.id].length }} Plans Available
+          </span>
+        </div>
+        <span class="chevron" [class.rotated]="expandedId === op.id">▼</span>
+      </div>
+
+      <!-- Plans accordion -->
+      <div class="plans-panel" *ngIf="expandedId === op.id">
+
+        <!-- Loading plans -->
+        <div class="plan-loading" *ngIf="loadingMap[op.id]">
+          <span class="dot-spin"></span> Loading plans…
+        </div>
+
+        <!-- Plans grid -->
+        <div class="plans-inner" *ngIf="!loadingMap[op.id] && planMap[op.id]?.length">
+          <div
+            class="plan-tile"
+            *ngFor="let plan of planMap[op.id]"
+            [id]="'plan-tile-' + plan.id"
+            (click)="selectPlan(plan)"
+          >
+            <div class="plan-amount">₹{{ plan.amount }}</div>
+            <div class="plan-validity">{{ plan.validity }}</div>
+            <a routerLink="/recharge/new" class="plan-recharge-btn">Recharge →</a>
+          </div>
+        </div>
+
+        <!-- No plans -->
+        <div class="no-plans" *ngIf="!loadingMap[op.id] && planMap[op.id]?.length === 0">
+          No plans available for {{ op.name }}.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="operators.length === 0">
+    <p>🚫 No operators found. Make sure the backend is running.</p>
+  </div>
+</div>

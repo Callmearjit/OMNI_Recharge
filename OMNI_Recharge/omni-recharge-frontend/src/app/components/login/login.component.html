@@ -1,0 +1,76 @@
+<!-- Login Page -->
+<div class="auth-page">
+  <div class="auth-card">
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="logo-ring"><span>⚡</span></div>
+      <h1>OMNI <span>Recharge</span></h1>
+      <p>Sign in to your account</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate autocomplete="off">
+
+      <!-- Username -->
+      <div class="field-group" [class.has-error]="f['username'].invalid && f['username'].touched">
+        <label for="login-username">Username</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input
+            id="login-username"
+            type="text"
+            formControlName="username"
+            placeholder="Enter your username"
+            autocomplete="username"
+          />
+        </div>
+        <p class="error-msg" *ngIf="f['username'].errors?.['required'] && f['username'].touched">
+          Username is required.
+        </p>
+        <p class="error-msg" *ngIf="f['username'].errors?.['minlength'] && f['username'].touched">
+          Min 3 characters required.
+        </p>
+      </div>
+
+      <!-- Password -->
+      <div class="field-group" [class.has-error]="f['password'].invalid && f['password'].touched">
+        <label for="login-password">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input
+            id="login-password"
+            [type]="showPass ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          />
+          <button type="button" class="pass-toggle" (click)="showPass = !showPass">
+            {{ showPass ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <p class="error-msg" *ngIf="f['password'].errors?.['required'] && f['password'].touched">
+          Password is required.
+        </p>
+      </div>
+
+      <!-- Submit -->
+      <button
+        id="login-submit-btn"
+        type="submit"
+        class="btn-primary"
+        [disabled]="loading"
+      >
+        <span *ngIf="!loading">Sign In →</span>
+        <span *ngIf="loading" class="btn-loading">
+          <span class="dot-spinner"></span> Signing in…
+        </span>
+      </button>
+
+    </form>
+
+    <p class="auth-switch">
+      Don't have an account?
+      <a routerLink="/register">Create one →</a>
+    </p>
+  </div>
+</div>

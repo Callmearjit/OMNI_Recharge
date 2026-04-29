@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: payment-service
+  config:
+    import: "optional:configserver:http://localhost:8888"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+    import: "optional:configserver:http://config-server:8888"
+  jpa:
+    hibernate:
+      ddl-auto: update

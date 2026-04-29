@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><testrun name="auth-service" project="auth-service" tests="6" started="6" failures="0" errors="0" ignored="0">
+  <testsuite name="com.auth_service.auth_service.AuthServiceApplicationTests" time="0.763" displayname="AuthServiceApplicationTests" uniqueid="[engine:junit-jupiter]/[class:com.auth_service.auth_service.AuthServiceApplicationTests]">
+    <testcase name="contextLoads" classname="com.auth_service.auth_service.AuthServiceApplicationTests" time="0.763" displayname="contextLoads()" uniqueid="[engine:junit-jupiter]/[class:com.auth_service.auth_service.AuthServiceApplicationTests]/[method:contextLoads()]"/>
+  </testsuite>
+  <testsuite name="com.auth_service.auth_service.AuthServiceTest" time="0.621" displayname="AuthServiceTest" uniqueid="[engine:junit-jupiter]/[class:com.auth_service.auth_service.AuthServiceTest]">
+    <testcase name="testUserExists_False" classname="com.auth_service.auth_service.AuthServiceTest" time="0.558" displayname="testUserExists_False()" uniqueid="[engine:junit-jupiter]/[class:com.auth_service.auth_service.AuthServiceTest]/[method:testUserExists_False()]"/>
+    <testcase name="testUserExists_True" classname="com.auth_service.auth_service.AuthServiceTest" time="0.013" displayname="testUserExists_True()" uniqueid="[engine:junit-jupiter]/[class:com.auth_service.auth_service.AuthServiceTest]/[method:testUserExists_True()]"/>
+    <testcase name="testAuthenticate_Success" classname="com.auth_service.auth_service.AuthServiceTest" time="0.017" displayname="testAuthenticate_Success()" uniqueid="[engine:junit-jupiter]/[class:com.auth_service.auth_service.AuthServiceTest]/[method:testAuthenticate_Success()]"/>
+    <testcase name="testRegister_Success" classname="com.auth_service.auth_service.AuthServiceTest" time="0.013" displayname="testRegister_Success()" uniqueid="[engine:junit-jupiter]/[class:com.auth_service.auth_service.AuthServiceTest]/[method:testRegister_Success()]"/>
+    <testcase name="testAuthenticate_Failure" classname="com.auth_service.auth_service.AuthServiceTest" time="0.012" displayname="testAuthenticate_Failure()" uniqueid="[engine:junit-jupiter]/[class:com.auth_service.auth_service.AuthServiceTest]/[method:testAuthenticate_Failure()]"/>
+  </testsuite>
+</testrun>

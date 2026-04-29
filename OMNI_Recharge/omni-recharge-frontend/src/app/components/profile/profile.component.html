@@ -1,0 +1,57 @@
+<app-navbar></app-navbar>
+<app-spinner [show]="loading" [message]="'Loading profile…'"></app-spinner>
+
+<div class="page" *ngIf="!loading">
+  <!-- Profile hero -->
+  <div class="profile-hero">
+    <div class="avatar-large">{{ initials }}</div>
+    <div class="profile-info">
+      <h1>{{ profile?.username || username }}</h1>
+      <p class="profile-email">{{ profile?.email || 'No email on record' }}</p>
+      <span class="role-badge" [class.admin]="role === 'ADMIN'">{{ role }}</span>
+    </div>
+    <button class="logout-btn" (click)="logout()">↗ Sign Out</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="prof-stats">
+    <div class="ps-card">
+      <span class="ps-num">{{ stats.total }}</span>
+      <span class="ps-label">Total Recharges</span>
+    </div>
+    <div class="ps-card success">
+      <span class="ps-num">{{ stats.success }}</span>
+      <span class="ps-label">Successful</span>
+    </div>
+    <div class="ps-card failed">
+      <span class="ps-num">{{ stats.failed }}</span>
+      <span class="ps-label">Failed</span>
+    </div>
+  </div>
+
+  <!-- Recent Recharges -->
+  <div class="card">
+    <div class="card-head">
+      <h2>🕐 Recent Recharges</h2>
+      <a routerLink="/history">View all →</a>
+    </div>
+    <div *ngIf="recharges.length; else noRec">
+      <div class="recharge-row" *ngFor="let r of recharges">
+        <div class="rr-left">
+          <span class="rr-mobile">📱 {{ r.mobileNumber }}</span>
+          <span class="rr-plan">Plan #{{ r.planId }}</span>
+        </div>
+        <span class="badge" [ngClass]="statusClass(r.status)">{{ r.status }}</span>
+      </div>
+    </div>
+    <ng-template #noRec>
+      <p class="empty-msg">No recharges yet. <a routerLink="/recharge/new">Recharge now →</a></p>
+    </ng-template>
+  </div>
+
+  <!-- Quick links -->
+  <div class="quick-links">
+    <a routerLink="/recharge/new" class="ql-btn primary">⚡ New Recharge</a>
+    <a routerLink="/history"      class="ql-btn">📜 Full History</a>
+  </div>
+</div>

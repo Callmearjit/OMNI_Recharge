@@ -1,0 +1,109 @@
+<app-navbar></app-navbar>
+<app-spinner [show]="loading" [message]="'Processing…'"></app-spinner>
+
+<div class="page">
+
+  <!-- ── STEP 1: Mobile Number ── -->
+  <div class="wizard-card" *ngIf="step === 1">
+    <div class="step-header">
+      <div class="step-badge">Step 1 of 4</div>
+      <h1>Enter Mobile Number</h1>
+      <p>Enter the 10-digit mobile number to recharge</p>
+    </div>
+    <form [formGroup]="mobileForm" (ngSubmit)="goToOperators()">
+      <div class="field-group" [class.has-error]="mobileCtrl.invalid && mobileCtrl.touched">
+        <label for="mobile-input">Mobile Number</label>
+        <div class="input-wrap">
+          <span class="input-icon">📱</span>
+          <input id="mobile-input" type="tel" formControlName="mobileNumber"
+            placeholder="Enter 10-digit mobile number" maxlength="10"/>
+        </div>
+        <p class="error-msg" *ngIf="mobileCtrl.errors?.['required'] && mobileCtrl.touched">Mobile number is required.</p>
+        <p class="error-msg" *ngIf="mobileCtrl.errors?.['pattern'] && mobileCtrl.touched">Enter a valid 10-digit number starting with 6-9.</p>
+      </div>
+      <button id="btn-continue-operator" type="submit" class="btn-primary">Select Operator →</button>
+    </form>
+  </div>
+
+  <!-- ── STEP 2: Select Operator ── -->
+  <div class="wizard-card" *ngIf="step === 2">
+    <div class="step-header">
+      <div class="step-badge">Step 2 of 4</div>
+      <h1>Select Operator</h1>
+      <p>Recharging: <strong>{{ mobileForm.value.mobileNumber }}</strong></p>
+    </div>
+    <app-spinner [show]="loadingPlans" [overlay]="false" [message]="'Loading plans…'"></app-spinner>
+    <div class="operators-grid" *ngIf="!loadingPlans">
+      <div class="op-card" *ngFor="let op of operators" (click)="selectOperator(op)" [id]="'op-' + op.id">
+        <span class="op-big-icon">{{ operatorIcon(op.name) }}</span>
+        <span class="op-name">{{ op.name }}</span>
+      </div>
+    </div>
+    <button class="btn-back" (click)="step = 1">← Back</button>
+  </div>
+
+  <!-- ── STEP 3: Select Plan ── -->
+  <div class="wizard-card wide" *ngIf="step === 3">
+    <div class="step-header">
+      <div class="step-badge">Step 3 of 4</div>
+      <h1>Select Plan</h1>
+      <p>{{ selectedOperator?.name }} plans for <strong>{{ mobileForm.value.mobileNumber }}</strong></p>
+    </div>
+
+    <!-- Plan Category Tabs -->
+    <div class="plan-tabs">
+      <button *ngFor="let tab of tabs" [class.active]="activeTab === tab" (click)="activeTab = tab">{{ tab }}</button>
+    </div>
+
+    <div class="plans-grid">
+      <div class="plan-card" *ngFor="let plan of filteredPlans()" (click)="selectPlan(plan)" [id]="'plan-' + plan.id">
+        <div class="plan-price">₹{{ plan.amount }}</div>
+        <div class="plan-validity">{{ plan.validity }}</div>
+        <div class="plan-op">{{ selectedOperator?.name }}</div>
+        <button class="btn-select-plan">Select Plan</button>
+      </div>
+      <div class="empty-msg" *ngIf="filteredPlans().length === 0">No plans in this category.</div>
+    </div>
+    <button class="btn-back" (click)="step = 2">← Back</button>
+  </div>
+
+  <!-- ── STEP 4: Confirm ── -->
+  <div class="wizard-card" *ngIf="step === 4">
+    <div class="step-header">
+      <div class="step-badge">Step 4 of 4</div>
+      <h1>Confirm Recharge</h1>
+    </div>
+    <div class="confirm-info">
+      <p class="confirm-for">Recharge for: <strong>{{ mobileForm.value.mobileNumber }} ({{ selectedOperator?.name }})</strong></p>
+      <div class="summary-table">
+        <div class="summary-row"><span>Amount</span><span class="summary-val">₹{{ selectedPlan?.amount }}</span></div>
+        <div class="summary-row"><span>Validity</span><span class="summary-val">{{ selectedPlan?.validity }}</span></div>
+        <div class="summary-row"><span>Operator</span><span class="summary-val">{{ selectedOperator?.name }}</span></div>
+      </div>
+      <button id="btn-pay" class="btn-primary" (click)="confirmRecharge()" [disabled]="loading">
+        Pay ₹{{ selectedPlan?.amount }}
+      </button>
+      <button class="btn-back" (click)="step = 3">← Change Plan</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 5: Result ── -->
+  <div class="wizard-card result-card" *ngIf="step === 5 && result">
+    <div *ngIf="result.status === 'SUCCESS' || result.status === 'PENDING'" class="result-success">
+      <div class="result-icon success-icon">✅</div>
+      <h1>Recharge Successful!</h1>
+      <p>Payment done for <strong>{{ result.mobileNumber || mobileForm.value.mobileNumber }}</strong></p>
+      <p class="txn-id">Transaction ID: <span>OM{{ result.id }}{{ result.planId }}</span></p>
+      <p class="result-sub">A summary has been sent to your email.</p>
+      <button id="btn-go-home" class="btn-primary" (click)="goHome()">Go to Home</button>
+    </div>
+    <div *ngIf="result.status === 'FAILED'" class="result-failed">
+      <div class="result-icon failed-icon">❌</div>
+      <h1>Recharge Failed!</h1>
+      <p>Payment could not be processed. Please try again.</p>
+      <p class="result-sub">A summary has been sent to your email.</p>
+      <button id="btn-retry" class="btn-retry" (click)="retry()">Retry</button>
+    </div>
+  </div>
+
+</div>
