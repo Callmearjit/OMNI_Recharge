@@ -28,6 +28,12 @@ public class SecurityConfig {
 	        .csrf(csrf -> csrf.disable())
 	        .httpBasic(basic -> basic.disable())
 	        .formLogin(form -> form.disable())
+	        .headers(headers -> headers.disable())
+	        // Disable Spring Security's own CORS filter — CORS is handled exclusively
+	        // by the gateway's globalcors CorsWebFilter (application.yml). Leaving it
+	        // enabled causes Spring Security to register a second CorsWebFilter that
+	        // duplicates Access-Control-* headers on every response.
+	        .cors(cors -> cors.disable())
 	        .authorizeExchange(auth -> auth
 	            .pathMatchers(
 	                "/swagger-ui/**",

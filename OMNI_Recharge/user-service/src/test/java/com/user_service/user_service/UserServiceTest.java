@@ -54,10 +54,15 @@ class UserServiceTest {
 
         when(userRepository.findByUsername("arjit")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("pass123")).thenReturn("hashed_pass");
+        when(jwtUtil.generateToken("arjit", "USER")).thenReturn("mock_token");
 
-        String result = userService.register(request);
+        UserResponse result = userService.register(request);
 
-        assertEquals("User registered successfully", result);
+        assertNotNull(result);
+        assertEquals("arjit", result.getUsername());
+        assertEquals("USER", result.getRole());
+        assertEquals("mock_token", result.getToken());
+
         verify(userRepository, times(1)).save(any());
     }
 

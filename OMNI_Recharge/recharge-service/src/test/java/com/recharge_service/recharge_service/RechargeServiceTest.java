@@ -20,7 +20,6 @@ import com.recharge_service.recharge_service.client.OperatorClient;
 import com.recharge_service.recharge_service.client.PaymentClient;
 import com.recharge_service.recharge_service.dto.PaymentResponse;
 import com.recharge_service.recharge_service.dto.PlanResponse;
-import com.recharge_service.recharge_service.messaging.RabbitProducer;
 import com.recharge_service.recharge_service.entity.Recharge;
 import com.recharge_service.recharge_service.repository.RechargeRepository;
 import com.recharge_service.recharge_service.service.RechargeService;
@@ -37,13 +36,9 @@ class RechargeServiceTest {
     @Mock
     private PaymentClient paymentClient;
 
-    @Mock
-    private RabbitProducer rabbitProducer;
-
     @InjectMocks
     private RechargeService rechargeService;
 
-    //Successful recharge test
     @Test
     void testCreateRecharge_Success() {
         Recharge recharge = new Recharge();
@@ -73,10 +68,9 @@ class RechargeServiceTest {
         Recharge result = rechargeService.createRecharge(recharge);
 
         assertNotNull(result);
-        verify(rabbitProducer, times(1)).sendRechargeEvent(any(), null, null, null, null);
+        verify(paymentClient, times(1)).processPayment(any());
     }
 
-    //Duplicate recharge test
     @Test
     void testCreateRecharge_Duplicate() {
         Recharge recharge = new Recharge();
@@ -91,7 +85,6 @@ class RechargeServiceTest {
         verify(paymentClient, never()).processPayment(any());
     }
 
-    //Payment failed test
     @Test
     void testCreateRecharge_PaymentFailed() {
         Recharge recharge = new Recharge();
@@ -119,10 +112,9 @@ class RechargeServiceTest {
         Recharge result = rechargeService.createRecharge(recharge);
 
         assertNotNull(result);
-        verify(rabbitProducer, never()).sendRechargeEvent(any(), null, null, null, null); // no notification
+        verify(paymentClient, times(1)).processPayment(any());
     }
 
-    //Circuit breaker fallback test
     @Test
     void testFallback() {
         Recharge recharge = new Recharge();

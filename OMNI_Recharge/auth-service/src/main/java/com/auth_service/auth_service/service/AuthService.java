@@ -46,7 +46,7 @@ public class AuthService {
         }
     }
 
-    public String register(AuthRequest request) {
+    public UserResponse register(AuthRequest request) {
         try {
             return userClient.registerUser(request);
         } catch (feign.FeignException.Conflict e) {

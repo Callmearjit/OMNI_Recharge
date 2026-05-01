@@ -11,7 +11,6 @@ import com.recharge_service.recharge_service.dto.PaymentRequest;
 import com.recharge_service.recharge_service.dto.PaymentResponse;
 import com.recharge_service.recharge_service.dto.PlanResponse;
 import com.recharge_service.recharge_service.entity.Recharge;
-import com.recharge_service.recharge_service.messaging.RabbitProducer;
 import com.recharge_service.recharge_service.repository.RechargeRepository;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -30,21 +29,15 @@ public class RechargeService {
     @Autowired
     private PaymentClient paymentClient;
 
-    @Autowired
-    private RabbitProducer rabbitProducer;
-
     @CircuitBreaker(name = "paymentService", fallbackMethod = "fallback")
     public Recharge createRecharge(Recharge recharge) {
 
-        // Idempotency check
         if (repository.findByIdempotencyKey(recharge.getIdempotencyKey()).isPresent()) {
             throw new RuntimeException("Duplicate Request");
         }
 
-        // Fetch plan details from operator-service
         PlanResponse plan = operatorClient.getPlan(recharge.getPlanId());
 
-        // Save as PENDING first
         recharge.setStatus("PENDING");
         Recharge saved = repository.save(recharge);
 
@@ -53,25 +46,14 @@ public class RechargeService {
             request.setRechargeId(saved.getId());
             request.setAmount(plan.getAmount());
             request.setIdempotencyKey(saved.getIdempotencyKey());
-
-            // ─────────────────────────────────────────────────────────
-            // FIX: Pass the userId (username string) from the saved recharge
-            // to the PaymentRequest so PaymentService can store it on the
-            // Transaction instead of the hardcoded 1L it used before.
-            // ─────────────────────────────────────────────────────────
             request.setUserId(saved.getUserId());
 
             PaymentResponse response = paymentClient.processPayment(request);
 
             if ("SUCCESS".equals(response.getStatus())) {
                 saved.setStatus("SUCCESS");
-                rabbitProducer.sendRechargeEvent(
-                        saved.getId(),
-                        saved.getUserId(),   // now a String, update RabbitProducer if it expects Long
-                        plan.getAmount(),
-                        "SUCCESS",
-                        String.valueOf(response.getTransactionId())
-                );
+                // payment-service publishes the RabbitMQ notification event —
+                // do NOT publish here too or notification-service receives duplicates
             } else {
                 saved.setStatus("FAILED");
                 log.warn("Payment returned non-SUCCESS status '{}' for rechargeId: {}",
@@ -86,7 +68,6 @@ public class RechargeService {
         return repository.save(saved);
     }
 
-    // Circuit breaker fallback — payment-service is down or slow
     public Recharge fallback(Recharge recharge, Exception ex) {
         log.error("Payment service circuit breaker triggered: {}", ex.getMessage());
         recharge.setStatus("FAILED");

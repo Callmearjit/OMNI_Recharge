@@ -30,7 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Allow login, register, swagger through without token
+        // ✅ Allow public endpoints
         if (path.equals("/login") || path.equals("/register")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/swagger-ui")) {
@@ -44,12 +44,29 @@ public class JwtFilter extends OncePerRequestFilter {
         String username = null;
         String role = null;
 
+        // ✅ Validate header
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
+
             token = authHeader.substring(7);
-            username = jwtUtil.extractUsername(token);
-            role = jwtUtil.extractRole(token);
+
+            // ❌ Empty token check
+            if (token == null || token.trim().isEmpty()) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            try {
+                // ✅ SAFE parsing (prevents crash)
+                username = jwtUtil.extractUsername(token);
+                role = jwtUtil.extractRole(token);
+            } catch (Exception e) {
+                System.out.println("Invalid JWT in Auth Service: " + e.getMessage());
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
 
+        // ✅ Set authentication
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             if (jwtUtil.validateToken(token, username)) {

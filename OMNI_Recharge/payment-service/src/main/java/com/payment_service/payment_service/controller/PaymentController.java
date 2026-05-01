@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.payment_service.payment_service.dto.ErrorDTO;
 import com.payment_service.payment_service.dto.PaymentRequest;
 import com.payment_service.payment_service.dto.PaymentResponse;
 import com.payment_service.payment_service.entity.Transaction;
+import com.payment_service.payment_service.exception.ResourceNotFoundException;
 import com.payment_service.payment_service.repository.TransactionRepository;
 import com.payment_service.payment_service.service.PaymentService;
 
@@ -42,17 +44,16 @@ public class PaymentController {
             @RequestHeader("X-Role") String role) {
 
         Transaction txn = transactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id: " + id));
 
         if (!"ADMIN".equals(role)) {
             if (txn.getUserId() == null) {
                 return ResponseEntity.status(403)
-                        .body("Access Denied: transaction owner unknown");
+                        .body(new ErrorDTO(403, "Access Denied: transaction owner unknown"));
             }
-            // ✅ Both are now String — clean equals comparison
             if (!txn.getUserId().equals(username)) {
                 return ResponseEntity.status(403)
-                        .body("Access Denied: you can only view your own transactions");
+                        .body(new ErrorDTO(403, "Access Denied: you can only view your own transactions"));
             }
         }
         return ResponseEntity.ok(txn);
@@ -69,7 +70,7 @@ public class PaymentController {
             @RequestHeader("X-Role") String role) {
 
         if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body("Access Denied: Admin only");
+            return ResponseEntity.status(403).body(new ErrorDTO(403, "Access Denied: Admin only"));
         }
 
         return ResponseEntity.ok(transactionRepository.findAll());

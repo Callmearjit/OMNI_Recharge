@@ -58,6 +58,7 @@ class OperatorServiceTest {
         plan.setAmount(299.0);
         plan.setValidity("28 days");
 
+        when(operatorRepository.existsById(1L)).thenReturn(true);
         when(planRepository.findByOperatorId(1L)).thenReturn(Arrays.asList(plan));
 
         List<Plan> result = operatorService.getPlansByOperator(1L);

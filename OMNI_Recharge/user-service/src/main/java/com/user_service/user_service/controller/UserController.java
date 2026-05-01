@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
+import com.user_service.user_service.dto.ErrorDTO;
 import com.user_service.user_service.dto.UserRequest;
 import com.user_service.user_service.dto.UserResponse;
 import com.user_service.user_service.service.UserService;
@@ -25,9 +28,8 @@ public class UserController {
 
     // ── Register ─────────────────────────────────────────────────────
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserRequest request) {
-        String response = userService.register(request);
-        return ResponseEntity.status(201).body(response);
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody UserRequest request) {
+        return ResponseEntity.status(201).body(userService.register(request));
     }
 
     // ── Login ────────────────────────────────────────────────────────
@@ -66,7 +68,7 @@ public class UserController {
             @RequestHeader("X-Role") String role) {
         // ✅ Fixed: moved logic to service
         if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body("Access Denied: Admin only");
+            return ResponseEntity.status(403).body(new ErrorDTO(403, "Access Denied: Admin only"));
         }
         List<UserResponse> users = userService.getAllUsers();
         return ResponseEntity.ok(users);

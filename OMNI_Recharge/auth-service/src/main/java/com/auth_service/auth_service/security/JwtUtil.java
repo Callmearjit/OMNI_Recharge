@@ -17,12 +17,13 @@ public class JwtUtil {
     @Value("${jwt.secret:secretarjituttt123455667ksfbbfXY}")
     private String secret;
 
-    private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
+    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 24; // 24 hours
 
     private Key getKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
+    // ✅ Generate token
     public String generateToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
@@ -33,29 +34,42 @@ public class JwtUtil {
                 .compact();
     }
 
+    // ✅ Extract username safely
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
 
+    // ✅ Extract role safely
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
     }
 
+    // ✅ Validate token safely
     public boolean validateToken(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return extractedUsername.equals(username) && !isTokenExpired(token);
+        try {
+            final String extractedUsername = extractUsername(token);
+            return extractedUsername.equals(username) && !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
+    // ✅ Expiry check
     private boolean isTokenExpired(String token) {
         Date expiration = extractAllClaims(token).getExpiration();
         return expiration != null && expiration.before(new Date());
     }
 
+    // ✅ CRITICAL FIX (prevents crash)
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid JWT token", e);
+        }
     }
 }

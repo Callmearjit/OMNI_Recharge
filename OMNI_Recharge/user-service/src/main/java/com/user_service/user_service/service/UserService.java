@@ -13,6 +13,7 @@ import com.user_service.user_service.dto.UserRequest;
 import com.user_service.user_service.dto.UserResponse;
 import com.user_service.user_service.entity.User;
 import com.user_service.user_service.enums.Role;
+import com.user_service.user_service.exception.ResourceNotFoundException;
 import com.user_service.user_service.repository.UserRepository;
 import com.user_service.user_service.security.JwtUtil;
 
@@ -30,7 +31,7 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public String register(UserRequest request) {
+    public UserResponse register(UserRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
@@ -48,12 +49,14 @@ public class UserService {
 
         userRepository.save(user);
         log.info("User '{}' registered with role {} and ID {}", user.getUsername(), user.getRole(), user.getId());
-        return "User registered successfully with ID: " + user.getId();
+
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
+        return new UserResponse(user.getId(), user.getUsername(), user.getRole().name(), token);
     }
 
     public UserResponse login(UserRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
@@ -70,7 +73,7 @@ public class UserService {
     // ✅ Added: for /profile endpoint
     public UserResponse getProfile(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return new UserResponse(user.getId(), user.getUsername(), user.getRole().name(), null);
     }
 

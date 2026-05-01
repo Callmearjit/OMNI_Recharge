@@ -17,7 +17,7 @@ public interface UserClient {
         @RequestParam("password") String password
     );
     @PostMapping("/register")
-    String registerUser(
+    UserResponse registerUser(
         @org.springframework.web.bind.annotation.RequestBody com.auth_service.auth_service.dto.AuthRequest request
     );
 

@@ -7,6 +7,17 @@ spring:
   # ── Gateway Routes (local dev) ──────────────────────────────────────
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      # Deduplicate all CORS response headers. Each microservice and the gateway's
+      # own CorsWebFilter can both set these, producing duplicate values that
+      # browsers reject. RETAIN_FIRST keeps the gateway's value.
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Allow-Methods Access-Control-Allow-Headers Access-Control-Expose-Headers Access-Control-Max-Age, RETAIN_FIRST
       routes:
 
         # Auth Service
@@ -123,6 +134,14 @@ spring:
 
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Allow-Methods Access-Control-Allow-Headers Access-Control-Expose-Headers Access-Control-Max-Age, RETAIN_FIRST
       routes:
 
         - id: auth-service

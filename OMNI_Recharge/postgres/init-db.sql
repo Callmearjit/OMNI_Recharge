@@ -1,0 +1,5 @@
+CREATE DATABASE "userDB";
+CREATE DATABASE "operatorDB";
+CREATE DATABASE "paymentDB";
+CREATE DATABASE "rechargeDB";
+CREATE DATABASE "notificationDB";

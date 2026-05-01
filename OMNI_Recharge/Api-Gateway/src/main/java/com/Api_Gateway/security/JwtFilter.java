@@ -11,9 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -25,33 +28,30 @@ public class JwtFilter implements GlobalFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
-    // ✅ All service /v3/api-docs paths whitelisted so Swagger UI can fetch specs
     private final List<String> WHITELIST = Arrays.asList(
-            // Auth endpoints
             "/auth/login",
             "/auth/register",
             "/login",
             "/register",
-            // User endpoints
             "/users/register",
             "/users/login",
             "/users/validate",
             "/users/exists",
-            // Operator public read endpoints (accessible without auth)
-            "/operators",
-            // ── Swagger / OpenAPI ──────────────────────────────────────────
             "/v3/api-docs",
             "/swagger-ui",
             "/swagger-ui.html",
             "/webjars",
             "/swagger-resources",
-            // Per-service api-docs (gateway strips prefix → /v3/api-docs on service)
             "/auth/v3/api-docs",
             "/users/v3/api-docs",
             "/operators/v3/api-docs",
             "/payments/v3/api-docs",
             "/recharges/v3/api-docs",
             "/notifications/v3/api-docs"
+    );
+
+    private final List<String> PUBLIC_GET_PREFIXES = Arrays.asList(
+            "/operators"
     );
 
     private final List<String> ADMIN_ONLY_PATHS = Arrays.asList(
@@ -70,24 +70,48 @@ public class JwtFilter implements GlobalFilter {
 
         System.out.println("JwtFilter path: " + path);
 
+        // Allow OPTIONS (CORS)
+        if (HttpMethod.OPTIONS.equals(method)) {
+            return chain.filter(exchange);
+        }
+
         boolean isWhitelisted = WHITELIST.stream().anyMatch(path::startsWith);
+
+        if (!isWhitelisted && HttpMethod.GET.equals(method)) {
+            isWhitelisted = PUBLIC_GET_PREFIXES.stream().anyMatch(path::startsWith);
+        }
+
         if (isWhitelisted) {
             return chain.filter(exchange);
         }
 
         String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
 
+        // ❌ No header
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return unauthorizedResponse(exchange, "Missing or invalid Authorization header");
         }
 
         String token = authHeader.substring(7);
 
+        // ❌ Empty token
+        if (token == null || token.trim().isEmpty()) {
+            return unauthorizedResponse(exchange, "Empty JWT token");
+        }
+
+        // ❌ Invalid token
         if (!jwtUtil.validateToken(token)) {
             return unauthorizedResponse(exchange, "Invalid or expired token");
         }
 
-        Claims claims = jwtUtil.extractClaims(token);
+        // ✅ SAFE parsing (FIX)
+        Claims claims;
+        try {
+            claims = jwtUtil.extractClaims(token);
+        } catch (Exception e) {
+            return unauthorizedResponse(exchange, "Invalid JWT token format");
+        }
+
         String username = claims.getSubject();
         String role = claims.get("role", String.class);
 
@@ -100,18 +124,25 @@ public class JwtFilter implements GlobalFilter {
             return forbiddenResponse(exchange, "Access Denied: Admin only");
         }
 
-        if (path.contains("/operators/plans") && method != null &&
+        boolean isOperatorWrite = path.startsWith("/operators") && method != null &&
                 (method.equals(HttpMethod.POST) || method.equals(HttpMethod.PUT)
-                        || method.equals(HttpMethod.DELETE))) {
-            if (!"ADMIN".equals(role)) {
-                return forbiddenResponse(exchange, "Access Denied: Only admins can manage plans");
-            }
+                        || method.equals(HttpMethod.DELETE));
+
+        if (isOperatorWrite && !"ADMIN".equals(role)) {
+            return forbiddenResponse(exchange, "Access Denied: Only admins can manage operators");
         }
 
-        ServerHttpRequest request = exchange.getRequest().mutate()
-                .header("X-User-Id", username)
-                .header("X-Role", role)
-                .build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.addAll(exchange.getRequest().getHeaders());
+        headers.set("X-User-Id", username);
+        headers.set("X-Role", role);
+
+        ServerHttpRequest request = new ServerHttpRequestDecorator(exchange.getRequest()) {
+            @Override
+            public HttpHeaders getHeaders() {
+                return HttpHeaders.readOnlyHttpHeaders(headers);
+            }
+        };
 
         return chain.filter(exchange.mutate().request(request).build());
     }
@@ -119,7 +150,7 @@ public class JwtFilter implements GlobalFilter {
     private Mono<Void> unauthorizedResponse(ServerWebExchange exchange, String message) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        response.getHeaders().add("Content-Type", "application/json");
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         String body = "{\"error\": \"" + message + "\"}";
         DataBuffer buffer = response.bufferFactory().wrap(body.getBytes());
         return response.writeWith(Mono.just(buffer));
@@ -128,7 +159,7 @@ public class JwtFilter implements GlobalFilter {
     private Mono<Void> forbiddenResponse(ServerWebExchange exchange, String message) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatus.FORBIDDEN);
-        response.getHeaders().add("Content-Type", "application/json");
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         String body = "{\"error\": \"" + message + "\"}";
         DataBuffer buffer = response.bufferFactory().wrap(body.getBytes());
         return response.writeWith(Mono.just(buffer));

@@ -1,21 +1,15 @@
-# ─── Stage 1: Build ───────────────────────────────────────────
-FROM eclipse-temurin:17-jdk-alpine AS build
+# Stage 1: Build
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 WORKDIR /app
-
-RUN apk add --no-cache maven
-
-COPY pom.xml ./
+COPY pom.xml .
+RUN mvn dependency:go-offline -q
 COPY src ./src
-RUN mvn package -DskipTests -B
+RUN mvn package -Dmaven.test.skip=true -q
 
-# ─── Stage 2: Run ─────────────────────────────────────────────
+# Stage 2: Run
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-
 RUN mkdir -p logs
-
-COPY --from=build /app/target/*.jar app.jar
-
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8888
-
 ENTRYPOINT ["java", "-jar", "app.jar"]

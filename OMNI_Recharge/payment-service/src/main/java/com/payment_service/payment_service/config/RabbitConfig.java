@@ -1,8 +1,5 @@
 package com.payment_service.payment_service.config;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -13,22 +10,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfig {
 
+    // payment-service only PRODUCES to the exchange — it does not consume the queue.
+    // The queue (with DLX args) is declared exclusively by notification-service to
+    // avoid PRECONDITION_FAILED when both services try to declare the same queue
+    // with different arguments.
     @Bean
-    public Queue queue() {
-        return new Queue("recharge-queue", true);
-    }
-
-    @Bean
-    public TopicExchange exchange() {
+    public TopicExchange rechargeExchange() {
         return new TopicExchange("recharge-exchange");
     }
 
-    @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with("recharge.*");
-    }
-
-    // Forces JSON serialization so notification-service can deserialize
     @Bean
     public Jackson2JsonMessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();

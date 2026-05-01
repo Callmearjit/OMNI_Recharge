@@ -55,13 +55,8 @@ public class PaymentService {
         txn.setIdempotencyKey(request.getIdempotencyKey());
 
         try {
-            txn.setStatus(PaymentStatus.PENDING);
-
-            if (request.getAmount() > 0) {
-                txn.setStatus(PaymentStatus.SUCCESS);
-            } else {
-                txn.setStatus(PaymentStatus.FAILED);
-            }
+            // Amount is already validated > 0 above, so payment always succeeds at this point
+            txn.setStatus(PaymentStatus.SUCCESS);
 
             transactionRepository.save(txn);
 

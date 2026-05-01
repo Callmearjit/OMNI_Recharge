@@ -58,12 +58,18 @@ class AuthServiceTest {
     void testRegister_Success() {
         com.auth_service.auth_service.dto.AuthRequest req = new com.auth_service.auth_service.dto.AuthRequest("newuser", "pass123", "test@test.com", "USER");
 
-        when(userClient.registerUser(org.mockito.ArgumentMatchers.any())).thenReturn("Success");
+        UserResponse mockResponse = new UserResponse();
+        mockResponse.setUsername("newuser");
+        mockResponse.setRole("USER");
+        mockResponse.setToken("mock.jwt.token");
 
-        String result = authService.register(req);
+        when(userClient.registerUser(org.mockito.ArgumentMatchers.any())).thenReturn(mockResponse);
+
+        UserResponse result = authService.register(req);
 
         assertNotNull(result);
-        assertEquals("Success", result);
+        assertEquals("newuser", result.getUsername());
+        assertNotNull(result.getToken());
     }
 
     //User exists check

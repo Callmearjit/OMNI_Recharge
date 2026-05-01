@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.recharge_service.recharge_service.dto.ErrorDTO;
+import com.recharge_service.recharge_service.dto.RechargeRequest;
 import com.recharge_service.recharge_service.entity.Recharge;
+import com.recharge_service.recharge_service.exception.ResourceNotFoundException;
 import com.recharge_service.recharge_service.repository.RechargeRepository;
 import com.recharge_service.recharge_service.service.RechargeService;
 
@@ -31,18 +34,15 @@ public class RechargeController {
     // ── Initiate a recharge ──────────────────────────────────────────
     @PostMapping
     public ResponseEntity<?> recharge(
-            @Valid @RequestBody Recharge recharge,
+            @Valid @RequestBody RechargeRequest request,
             @RequestHeader("X-User-Id") String userId) {
 
-        // ─────────────────────────────────────────────────────────────
-        // FIX: Was Long.parseLong(userId) which threw NumberFormatException
-        // because X-User-Id is the username string from the JWT subject
-        // (e.g. "arjit"), not a numeric ID.
-        //
-        // Now userId is directly stored as-is (String). The Recharge entity
-        // userId field has been changed from Long to String accordingly.
-        // ─────────────────────────────────────────────────────────────
+        Recharge recharge = new Recharge();
+        recharge.setMobileNumber(request.getMobileNumber());
+        recharge.setPlanId(request.getPlanId());
+        recharge.setIdempotencyKey(request.getIdempotencyKey());
         recharge.setUserId(userId);
+
         return ResponseEntity.ok(service.createRecharge(recharge));
     }
 
@@ -51,7 +51,6 @@ public class RechargeController {
     public ResponseEntity<?> getMyRechargeHistory(
             @RequestHeader("X-User-Id") String userId) {
 
-        // FIX: Was Long.parseLong(userId) — now passes String directly
         List<Recharge> history = rechargeRepository.findByUserId(userId);
         return ResponseEntity.ok(history);
     }
@@ -64,15 +63,11 @@ public class RechargeController {
             @RequestHeader("X-Role") String role) {
 
         Recharge recharge = rechargeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recharge not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Recharge not found with id: " + id));
 
-        // ─────────────────────────────────────────────────────────────
-        // FIX: Was recharge.getUserId().equals(Long.parseLong(userId))
-        // which crashed for the same reason. Now both sides are Strings.
-        // ─────────────────────────────────────────────────────────────
         if (!"ADMIN".equals(role) && !recharge.getUserId().equals(userId)) {
             return ResponseEntity.status(403)
-                    .body("Access Denied: You can only view your own recharges");
+                    .body(new ErrorDTO(403, "Access Denied: You can only view your own recharges"));
         }
 
         return ResponseEntity.ok(recharge);
@@ -84,7 +79,7 @@ public class RechargeController {
             @RequestHeader("X-Role") String role) {
 
         if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body("Access Denied: Admin only");
+            return ResponseEntity.status(403).body(new ErrorDTO(403, "Access Denied: Admin only"));
         }
 
         return ResponseEntity.ok(rechargeRepository.findAll());

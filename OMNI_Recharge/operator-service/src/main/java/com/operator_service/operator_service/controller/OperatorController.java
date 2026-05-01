@@ -3,6 +3,7 @@ package com.operator_service.operator_service.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.operator_service.operator_service.dto.ErrorDTO;
+import com.operator_service.operator_service.dto.OperatorRequest;
+import com.operator_service.operator_service.dto.OperatorResponse;
 import com.operator_service.operator_service.entity.Operator;
 import com.operator_service.operator_service.entity.Plan;
 import com.operator_service.operator_service.service.OperatorService;
@@ -25,7 +29,7 @@ public class OperatorController {
     @Autowired
     private OperatorService operatorService;
 
-    // ── Public read endpoints (no auth needed) ───────────────────────
+    // ── Public read endpoints ─────────────────────────────────────────
     @GetMapping
     public List<Operator> getOperators() {
         return operatorService.getAllOperators();
@@ -42,50 +46,55 @@ public class OperatorController {
     }
 
     // ── ADMIN write endpoints ─────────────────────────────────────────
+    @PostMapping
+    public ResponseEntity<?> createOperator(
+            @RequestBody OperatorRequest request,
+            @RequestHeader("X-Role") String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorDTO(HttpStatus.FORBIDDEN.value(), "Access Denied: Admin only"));
+        }
+
+        OperatorResponse response = operatorService.createOperator(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @PostMapping("/plans")
-    public ResponseEntity<String> addPlan(
+    public ResponseEntity<?> addPlan(
             @RequestBody Plan plan,
             @RequestHeader("X-Role") String role) {
 
-        // ─────────────────────────────────────────────────────────────
-        // FIX: Was throwing RuntimeException("Access Denied") which:
-        //   1. Gets caught by GlobalExceptionHandler and returns 400 Bad Request
-        //      instead of the correct 403 Forbidden.
-        //   2. Leaks exception class names into stack traces in logs.
-        //
-        // Now returns ResponseEntity.status(403) directly.
-        // The gateway JwtFilter already blocks non-admins, so this is a
-        // belt-and-suspenders safety check inside the service itself.
-        // ─────────────────────────────────────────────────────────────
         if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body("Access Denied: Admin only");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorDTO(HttpStatus.FORBIDDEN.value(), "Access Denied: Admin only"));
         }
 
         return ResponseEntity.ok(operatorService.addPlan(plan));
     }
 
     @PutMapping("/plans/{planId}")
-    public ResponseEntity<String> updatePlan(
+    public ResponseEntity<?> updatePlan(
             @PathVariable Long planId,
             @RequestBody Plan updatedPlan,
             @RequestHeader("X-Role") String role) {
 
-        // FIX: Same as above — was throw RuntimeException, now returns 403
         if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body("Access Denied: Admin only");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorDTO(HttpStatus.FORBIDDEN.value(), "Access Denied: Admin only"));
         }
 
         return ResponseEntity.ok(operatorService.updatePlan(planId, updatedPlan));
     }
 
     @DeleteMapping("/plans/{planId}")
-    public ResponseEntity<String> deletePlan(
+    public ResponseEntity<?> deletePlan(
             @PathVariable Long planId,
             @RequestHeader("X-Role") String role) {
 
-        // FIX: Same as above — was throw RuntimeException, now returns 403
         if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body("Access Denied: Admin only");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorDTO(HttpStatus.FORBIDDEN.value(), "Access Denied: Admin only"));
         }
 
         return ResponseEntity.ok(operatorService.deletePlan(planId));
